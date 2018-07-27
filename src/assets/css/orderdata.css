@@ -1,0 +1,124 @@
+p{
+    padding:0;
+}
+.order_data{
+  background:white;
+  border-radius:5px;
+  height:100%;
+  position:relative;
+  padding-top:40px;
+}
+.order_data p{
+  font-size: 12px;
+  margin-bottom: 5px;
+  
+}
+.order-bottom{
+	  position: absolute;
+    bottom: 6px;
+    width: 100%;
+}
+.ordersn-data{
+	text-align: left;
+	padding: 0 4%;
+}
+.ordersn-data:after{
+	content:"";
+  width:0;
+  height: 0;
+  display: block;
+  visibility: hidden;
+  clear: both;
+}
+.cashier{
+	float:left;
+	width:35%;
+}
+.order-member{
+	text-align:left;
+	padding:0 4%;
+}
+.ordersn{
+	float:left;
+	width:65%;
+}
+.order-productlist table{
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.order-productlist table tr{
+	border:1px solid #ccc;
+	border-left:0;
+	border-right:0;
+	height:54px;
+}
+
+.order-productlist table tr:nth-child(1){
+	height:36px;
+}
+
+.order-productlist table th{
+	font-size:14px;
+}
+
+.order-productlist table th:nth-child(1){
+	width:10%;
+}
+.order-productlist table th:nth-child(2){
+	width:40%;
+}
+.order-productlist table th:nth-child(3){
+	width:20%;
+}
+.order-productlist table th:nth-child(4){
+	width:30%;
+}
+
+.order-productlist table td{
+	font-size:12px;
+}
+.order-operatelist{
+	padding: 0 4%;
+}
+.order-operatelist p{
+	float:left;
+	width:25%;
+	height:60px;
+}
+.head_icon{
+	width:100%;
+	height:37px;
+	position: absolute;
+	top:-7px;
+	left:0;
+	background:url(../assets/clip.png) no-repeat center center;
+}
+.order-operatelist p:nth-child(1){
+	background: url(../assets/operate.png) no-repeat 10px 5px;
+}
+.order-operatelist p:nth-child(2){
+	background: url(../assets/operate.png) no-repeat 10px -66px;
+}
+.order-operatelist p:nth-child(3){
+	background: url(../assets/operate.png) no-repeat 10px -139px;
+}
+.order-operatelist p:nth-child(4){
+	background: url(../assets/operate.png) no-repeat 10px -212px;
+}
+
+.order-operatelist:after{
+	content:"";
+  width:0;
+  height: 0;
+  display: block;
+  visibility: hidden;
+  clear: both;
+}
+.order-submit p button{
+	width: 92%;
+	height:44px;
+  background: #ff6600;
+  border:none;
+  color:white;
+}

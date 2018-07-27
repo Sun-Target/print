@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <link rel="stylesheet" href="static/mui.min.css" />
+    <link rel="stylesheet" href="static/base.css" />
+    <link rel="stylesheet" href="static/main.css" />
+    <script type="text/javascript" src="static/mui.min.js" ></script>
+    <script type="text/javascript" src="static/mui.back.js" ></script>
+    <title>收银</title>
+  </head>
+  <body>
+
+    <div id="app">
+
+    </div>
+    <!-- built files will be auto injected -->
+  </body>
+  <script type="text/javascript" src="static/pos.js" ></script>
+  <script type="text/javascript" src="static/md5.min.js"></script>
+  <script src="https://a.alipayobjects.com/g/h5-lib/alipayjsapi/3.0.6/alipayjsapi.min.js"></script>
+  <script src="https://os.alipayobjects.com/rmsportal/oknmeDPmBzRhliY.js"></script>
+  <script type="text/javascript">
+      mui.init();
+
+        document.addEventListener( "plusready", function(){
+          var messageList = [];
+          var message = document.getElementById("message");
+          // 监听点击消息事件
+          plus.push.addEventListener( "click", function( msg ) {
+              // alert(JSON.stringify(msg));
+              // 判断是从本地创建还是离线推送的消息
+              switch( msg.payload ) {
+                  case "LocalMSG":
+                      document.addEventListener("resume", function () {
+                          mui.plusReady(function(){
+                            // 循环清除通知栏
+                            var all_message = plus.push.getAllMessage();
+                            if(all_message.length > 0){
+                              for(var i = 0; i < all_message.length; i++){
+                                plus.push.remove(all_message[i]);
+                              }
+                            }
+                            // 进行跳转，使用vue-router跳转失败
+                            if(msg){
+                              sessionStorage.message_status = 2;
+                              location.href = window.location.href.split('#')[0]+'#/msgcenter';
+                            }
+                            // 需要销毁这个对象，要不然每次启动app都会跳转到指定页面
+                            msg = false;
+                          })
+                      }, false);
+                      outSet( "点击本地创建消息启动：" );
+                  break;
+                  default:
+                      outSet( "点击离线推送消息启动：");
+                  break;
+              }
+              // 处理其它数据
+              logoutPushMsg( msg );
+          }, false );
+
+          // 监听在线消息事件
+          plus.push.addEventListener( "receive", function( msg ) {
+              // alert(JSON.stringify(msg));
+              var time = getNowTime();
+              var payload = JSON.parse(msg.payload);
+              if(parseInt(payload.time) - time < 86400){
+                // 把监听到的消息添加数组
+                messageList.push(payload);
+                // 排队只有队伍执行完了，才再次调用排队函数
+                if(messageList.length == 1){
+                  queue(messageList);
+                }
+              }
+          }, false );
+      }, false );
+      // 获取当天凌晨时间戳
+      function getNowTime(){
+        var start=new Date();
+        start.setHours(0);
+        start.setMinutes(0);
+        start.setSeconds(0);
+        start.setMilliseconds(0);
+        var todayStartTime = Date.parse(start)/1000;
+        return todayStartTime;
+      }
+      // 消息进行排队设置
+      function queue(messageList){
+        if(messageList.length > 0){
+          var reponse = messageList[0];
+          // 创建消息
+          plus.push.createMessage(reponse['content'],'LocalMSG',{"title":reponse['title'],"sound":"none","cover":false});
+          localStorage.isMessage = 1;
+          // 如果设置了响铃，就apend一个audio到id为app的标签里
+          if(reponse['sound'] == 't'){
+            // createAudio(reponse['url'],reponse['table_id']);
+            createSpeech(reponse);
+          }
+          // 延迟8秒后，再播放下一条通知
+          setTimeout(function(){
+            messageList.splice(0,1);
+            queue(messageList);
+          },10000);
+        }
+      }
+      // 创建audio标签
+      function createAudio(url,table_id) {
+        var audio = document.createElement('audio');
+        var app = document.getElementById('app');
+        var oldAudio = document.getElementById(table_id.toString());
+        // 如果已经存在这个id，就先移除掉
+        if(oldAudio){
+          app.removeChild(oldAudio);
+        }
+        audio.setAttribute('controls','controls');
+        audio.setAttribute('autoplay','autoplay');
+        audio.setAttribute('src',url);
+        audio.setAttribute('id',table_id.toString());
+        // audio.setAttribute('loop','loop');
+        audio.style.display = 'none';
+        app.appendChild(audio);
+      }
+      // 使用科大讯飞
+      function createSpeech(reponse) {
+        var main = plus.android.runtimeMainActivity();
+        var SpeechUtility = plus.android.importClass('com.iflytek.cloud.SpeechUtility');
+        var SpeechConstant = plus.android.importClass('com.iflytek.cloud.SpeechConstant');
+        SpeechUtility.createUtility(main,"appid=5af2af41");
+
+        var SynthesizerPlayer = plus.android.importClass('com.iflytek.cloud.SpeechSynthesizer');
+        var play = SynthesizerPlayer.createSynthesizer(main, null);
+        play.setParameter(SpeechConstant.VOICE_NAME, "xiaojing");//设置发音人
+        play.setParameter(SpeechConstant.SPEED, "10");//设置语速
+        play.setParameter(SpeechConstant.VOLUME, "90");//设置音量，范围0~100
+        // play.setParameter(SpeechConstant.ENGINE_TYPE, SpeechConstant.TYPE_CLOUD); //设置云端
+
+        if(reponse['type'] == 1){
+          play.startSpeaking(reponse['tablename'] + '有新的扫码点餐订单，' + reponse['tablename'] + '有新的扫码点餐订单',null);
+        }else if(reponse['type'] == 2){
+          var speech = '';
+          if(reponse['source'] == 'eleme'){
+            speech = '饿了吗有新的外卖订单，饿了吗有新的外卖订单';
+          }else if(reponse['source'] == 'mtuan'){
+            speech = '美团有新的外卖订单，美团有新的外卖订单';
+          }
+          play.startSpeaking(speech,null);
+        }else if(reponse['type'] == 3){
+          play.startSpeaking(reponse['tablename'] + '请用餐，' + reponse['tablename'] + '请用餐',null);
+        }
+      }
+  </script>
+</html>
+
